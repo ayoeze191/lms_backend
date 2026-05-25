@@ -1,0 +1,13 @@
+cat > .dockerignore << 'EOF'
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+.git/
+.gitignore
+db.sqlite3
+media/
+*.md
+EOF
