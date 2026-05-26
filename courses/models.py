@@ -54,4 +54,4 @@ class Course(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.t
+        return self.title
