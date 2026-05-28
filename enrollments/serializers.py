@@ -1,18 +1,23 @@
 from rest_framework import serializers
-from enrollments.models import Enrollment, LessonProgress
+from .models import Enrollment, Result
 from courses.serializers import CourseSerializer
 
 
-class LessonProgressSerializer(serializers.ModelSerializer):
+class ResultSerializer(serializers.ModelSerializer):
     class Meta:
-        model = LessonProgress
+        model = Result
         fields = [
             'id',
-            'lesson',
-            'is_completed',
-            'completed_at',
+            'ca_score',
+            'exam_score',
+            'total_score',
+            'grade',
+            'grade_point',
+            'is_published',
+            'created_at',
+            'updated_at',
         ]
-        read_only_fields = ['id', 'completed_at']
+        read_only_fields = ['id', 'total_score', 'grade', 'grade_point', 'created_at', 'updated_at']
 
 
 class EnrollmentSerializer(serializers.ModelSerializer):
@@ -25,22 +30,35 @@ class EnrollmentSerializer(serializers.ModelSerializer):
         source='course',
         write_only=True
     )
-    progress = LessonProgressSerializer(many=True, read_only=True)
-    student = serializers.StringRelatedField(read_only=True)
+    result = ResultSerializer(read_only=True)
+    student_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Enrollment
         fields = [
             'id',
             'student',
+            'student_name',
             'course',
             'course_id',
             'status',
-            'progress',
+            'result',
             'enrolled_at',
-            'completed_at',
+            'approved_at',
+            'rejected_at',
+            'rejection_reason',
         ]
-        read_only_fields = ['id', 'student', 'enrolled_at', 'completed_at']
+        read_only_fields = [
+            'id',
+            'student',
+            'status',
+            'enrolled_at',
+            'approved_at',
+            'rejected_at',
+        ]
+
+    def get_student_name(self, obj):
+        return obj.student.username
 
     def create(self, validated_data):
         request = self.context.get('request')

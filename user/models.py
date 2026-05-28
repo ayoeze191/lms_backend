@@ -5,7 +5,8 @@ from django.db import models
 class User(AbstractUser):
     class Role(models.TextChoices):
         STUDENT = 'student', 'Student'
-        INSTRUCTOR = 'instructor', 'Instructor'
+        LECTURER = 'lecturer', 'Lecturer'
+        ADMIN = 'admin', 'Admin'
 
     email = models.EmailField(unique=True)
     role = models.CharField(
@@ -15,6 +16,16 @@ class User(AbstractUser):
     )
     bio = models.TextField(blank=True, null=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    department = models.ForeignKey(
+        'courses.Department',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='users'
+    )
+    student_id = models.CharField(max_length=20, unique=True, null=True, blank=True)
+    staff_id = models.CharField(max_length=20, unique=True, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -25,9 +36,13 @@ class User(AbstractUser):
         return self.email
 
     @property
-    def is_instructor(self):
-        return self.role == self.Role.INSTRUCTOR
+    def is_lecturer(self):
+        return self.role == self.Role.LECTURER
 
     @property
     def is_student(self):
         return self.role == self.Role.STUDENT
+
+    @property
+    def is_admin(self):
+        return self.role == self.Role.ADMIN

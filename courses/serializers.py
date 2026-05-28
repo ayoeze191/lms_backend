@@ -1,42 +1,94 @@
 from rest_framework import serializers
-from .models import Course, Category
-from user.serializer import UserSerializer
+from .models import Course, Faculty, Department, AcademicSession, Semester
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class FacultySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Category
-        fields = ['id', 'name', 'description']
+        model = Faculty
+        fields = ['id', 'name', 'code', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+
+class DepartmentSerializer(serializers.ModelSerializer):
+    faculty = FacultySerializer(read_only=True)
+    faculty_id = serializers.PrimaryKeyRelatedField(
+        queryset=Faculty.objects.all(),
+        source='faculty',
+        write_only=True
+    )
+
+    class Meta:
+        model = Department
+        fields = ['id', 'name', 'code', 'faculty', 'faculty_id', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+
+class AcademicSessionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AcademicSession
+        fields = ['id', 'name', 'start_date', 'end_date', 'is_current', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+
+class SemesterSerializer(serializers.ModelSerializer):
+    session = AcademicSessionSerializer(read_only=True)
+    session_id = serializers.PrimaryKeyRelatedField(
+        queryset=AcademicSession.objects.all(),
+        source='session',
+        write_only=True
+    )
+
+    class Meta:
+        model = Semester
+        fields = [
+            'id',
+            'session',
+            'session_id',
+            'semester_type',
+            'is_current',
+            'registration_open',
+            'created_at'
+        ]
+        read_only_fields = ['id', 'created_at']
 
 
 class CourseSerializer(serializers.ModelSerializer):
-    instructor = UserSerializer(read_only=True)
-    category = CategorySerializer(read_only=True)
-    category_id = serializers.PrimaryKeyRelatedField(
-        queryset=Category.objects.all(),
-        source='category',
-        write_only=True,
-        required=False
+    department = DepartmentSerializer(read_only=True)
+    department_id = serializers.PrimaryKeyRelatedField(
+        queryset=Department.objects.all(),
+        source='department',
+        write_only=True
     )
+    semester = SemesterSerializer(read_only=True)
+    semester_id = serializers.PrimaryKeyRelatedField(
+        queryset=Semester.objects.all(),
+        source='semester',
+        write_only=True
+    )
+    lecturer_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Course
         fields = [
             'id',
-            'instructor',
-            'category',
-            'category_id',
             'title',
+            'code',
             'description',
-            'thumbnail',
+            'credit_units',
             'level',
-            'status',
-            'price',
+            'is_active',
+            'department',
+            'department_id',
+            'semester',
+            'semester_id',
+            'lecturer',
+            'lecturer_name',
             'created_at',
             'updated_at',
         ]
-        read_only_fields = ['id', 'instructor', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
 
-    def create(self, validated_data):
-        request = self.context.get('request')
-        validated_data['instructor'] = request.user
-        return super().create(validated_data)
+    def get_lecturer_name(self, obj):
+        if obj.lecturer:
+            return f"{obj.lecturer.username}"
+        return None
