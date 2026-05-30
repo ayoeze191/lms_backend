@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: lms-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: DJANGO_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: false
+      - key: DB_NAME
+        fromDatabase:
+          name: lms-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: lms-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: lms-db
+          property: password
+      - key: DB_HOST
+        fromDatabase:
+          name: lms-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: lms-db
+          property: port
+      - key: EMAIL_HOST
+        value: smtp.gmail.com
+      - key: EMAIL_PORT
+        value: 587
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+
+databases:
+  - name: lms-db
+    plan: free

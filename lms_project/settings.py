@@ -33,8 +33,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG') == 'True'
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
 
 # Application definition
 
@@ -152,11 +151,17 @@ REST_FRAMEWORK = {
 from datetime import timedelta
 
 # CORS
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True
 
 # Media files (avatars, thumbnails)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+static_url = '/static/'
+static_root = BASE_DIR / 'staticfiles'
+
+
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:5173').split(',')
+CORS_ALLOW_ALL_ORIGINS = os.getenv('DEBUG', 'True') == 'True'
 
 # SimpleJWT settings
 SIMPLE_JWT = {
