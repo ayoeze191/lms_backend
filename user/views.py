@@ -13,7 +13,7 @@ class SuperUserCreateView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        if User.objects.filter(role=User.Role.ADMIN).exists():
+        if User.objects.filter(is_superuser=True).exists():
             return Response(
                 {"error": "Superuser already exists."},
                 status=status.HTTP_400_BAD_REQUEST

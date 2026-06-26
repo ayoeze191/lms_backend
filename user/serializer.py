@@ -47,6 +47,25 @@ class RegisterSerializer(serializers.ModelSerializer):
 class SuperUserSerializer(RegisterSerializer):
     is_superuser = serializers.BooleanField(default=True)
     is_staff = serializers.BooleanField(default=True)
+
+    class Meta(RegisterSerializer.Meta):
+        fields = RegisterSerializer.Meta.fields + [
+            'is_staff',
+            'is_superuser',
+        ]
+
+    def create(self, validated_data):
+        validated_data.pop('confirm_password')
+        user = User.objects.create_superuser(
+            email=validated_data['email'],
+            username=validated_data['username'],
+            password=validated_data['password'],
+            role=validated_data.get('role', User.Role.ADMIN),
+            student_id=validated_data.get('student_id', None),
+            staff_id=validated_data.get('staff_id', None),
+            department=validated_data.get('department', None),
+        )
+        return user
     
 class UserSerializer(serializers.ModelSerializer):
     department = DepartmentSerializer(read_only=True)
