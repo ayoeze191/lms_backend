@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from .models import Enrollment, Result
 from courses.serializers import CourseSerializer
 
@@ -57,6 +58,7 @@ class EnrollmentSerializer(serializers.ModelSerializer):
             'rejected_at',
         ]
 
+    @extend_schema_field(str)
     def get_student_name(self, obj):
         return obj.student.username
 

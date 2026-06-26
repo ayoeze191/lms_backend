@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from drf_spectacular.utils import extend_schema
 from django.utils import timezone
 from .models import Enrollment, Result
 from .serializers import EnrollmentSerializer, ResultSerializer
@@ -9,7 +10,9 @@ from .serializers import EnrollmentSerializer, ResultSerializer
 
 class EnrollmentListCreateView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = EnrollmentSerializer
 
+    @extend_schema(operation_id='enrollments_list', responses=EnrollmentSerializer(many=True))
     def get(self, request):
         if request.user.is_student:
             enrollments = Enrollment.objects.filter(student=request.user)
@@ -22,6 +25,7 @@ class EnrollmentListCreateView(APIView):
         serializer = EnrollmentSerializer(enrollments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @extend_schema(operation_id='enrollments_create', request=EnrollmentSerializer, responses=EnrollmentSerializer)
     def post(self, request):
         if not request.user.is_student:
             return Response(
@@ -43,6 +47,7 @@ class EnrollmentListCreateView(APIView):
 
 class EnrollmentDetailView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = EnrollmentSerializer
 
     def get_object(self, pk):
         try:
@@ -50,6 +55,7 @@ class EnrollmentDetailView(APIView):
         except Enrollment.DoesNotExist:
             return None
 
+    @extend_schema(operation_id='enrollments_retrieve', responses=EnrollmentSerializer)
     def get(self, request, pk):
         enrollment = self.get_object(pk)
         if not enrollment:
@@ -60,6 +66,7 @@ class EnrollmentDetailView(APIView):
         serializer = EnrollmentSerializer(enrollment)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @extend_schema(operation_id='enrollments_destroy')
     def delete(self, request, pk):
         enrollment = self.get_object(pk)
         if not enrollment:
@@ -81,7 +88,9 @@ class EnrollmentDetailView(APIView):
 
 class EnrollmentApprovalView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = EnrollmentSerializer
 
+    @extend_schema(operation_id='enrollments_approve', request=EnrollmentSerializer, responses=EnrollmentSerializer)
     def patch(self, request, pk):
         try:
             enrollment = Enrollment.objects.get(pk=pk)
@@ -131,7 +140,9 @@ class EnrollmentApprovalView(APIView):
 
 class ResultCreateUpdateView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = ResultSerializer
 
+    @extend_schema(operation_id='results_create_or_update', request=ResultSerializer, responses=ResultSerializer)
     def post(self, request, enrollment_pk):
         if not request.user.is_lecturer and not request.user.is_admin:
             return Response(
@@ -169,7 +180,9 @@ class ResultCreateUpdateView(APIView):
 
 class PublishResultView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = ResultSerializer
 
+    @extend_schema(operation_id='results_publish', responses=ResultSerializer)
     def patch(self, request, enrollment_pk):
         if not request.user.is_lecturer and not request.user.is_admin:
             return Response(

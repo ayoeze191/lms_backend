@@ -2,21 +2,27 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from drf_spectacular.utils import extend_schema
 from .models import Section, Lesson
 from .serializers import SectionSerializer, LessonSerializer
 from courses.models import Course
 
 
 class SectionListCreateView(APIView):
+    serializer_class = SectionSerializer
+
     def get_permissions(self):
         if self.request.method == 'GET':
             return [AllowAny()]
         return [IsAuthenticated()]
+
+    @extend_schema(operation_id='sections_list', responses=SectionSerializer(many=True))
     def get(self, request, course_pk):
         sections = Section.objects.filter(course_id=course_pk)
         serializer = SectionSerializer(sections, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @extend_schema(operation_id='sections_create', request=SectionSerializer, responses=SectionSerializer)
     def post(self, request, course_pk):
         try:
             course = Course.objects.get(pk=course_pk)
@@ -41,6 +47,7 @@ class SectionListCreateView(APIView):
 
 class SectionDetailView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = SectionSerializer
 
     def get_object(self, pk):
         try:
@@ -48,6 +55,7 @@ class SectionDetailView(APIView):
         except Section.DoesNotExist:
             return None
 
+    @extend_schema(operation_id='sections_partial_update', request=SectionSerializer, responses=SectionSerializer)
     def patch(self, request, course_pk, pk):
         section = self.get_object(pk)
         if not section:
@@ -66,6 +74,7 @@ class SectionDetailView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @extend_schema(operation_id='sections_destroy')
     def delete(self, request, course_pk, pk):
         section = self.get_object(pk)
         if not section:
@@ -86,17 +95,20 @@ class SectionDetailView(APIView):
 
 
 class LessonListCreateView(APIView):
+    serializer_class = LessonSerializer
 
     def get_permissions(self):
         if self.request.method == 'GET':
             return [AllowAny()]
         return [IsAuthenticated()]
 
+    @extend_schema(operation_id='lessons_list', responses=LessonSerializer(many=True))
     def get(self, request, course_pk, section_pk):
         lessons = Lesson.objects.filter(section_id=section_pk)
         serializer = LessonSerializer(lessons, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @extend_schema(operation_id='lessons_create', request=LessonSerializer, responses=LessonSerializer)
     def post(self, request, course_pk, section_pk):
         try:
             section = Section.objects.get(pk=section_pk)
@@ -121,6 +133,7 @@ class LessonListCreateView(APIView):
 
 class LessonDetailView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = LessonSerializer
 
     def get_object(self, pk):
         try:
@@ -128,6 +141,7 @@ class LessonDetailView(APIView):
         except Lesson.DoesNotExist:
             return None
 
+    @extend_schema(operation_id='lessons_partial_update', request=LessonSerializer, responses=LessonSerializer)
     def patch(self, request, course_pk, section_pk, pk):
         lesson = self.get_object(pk)
         if not lesson:
@@ -146,6 +160,7 @@ class LessonDetailView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @extend_schema(operation_id='lessons_destroy')
     def delete(self, request, course_pk, section_pk, pk):
         lesson = self.get_object(pk)
         if not lesson:

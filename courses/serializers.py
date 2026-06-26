@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from .models import Course, Faculty, Department, AcademicSession, Semester
 
 
@@ -88,6 +89,7 @@ class CourseSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
+    @extend_schema_field(str)
     def get_lecturer_name(self, obj):
         if obj.lecturer:
             return f"{obj.lecturer.username}"

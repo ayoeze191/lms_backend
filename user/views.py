@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from drf_spectacular.utils import extend_schema
 from django.contrib.auth import get_user_model
 from .serializer import RegisterSerializer, UserSerializer, SuperUserSerializer
 
@@ -11,7 +12,9 @@ User = get_user_model()
 
 class SuperUserCreateView(APIView):
     permission_classes = [AllowAny]
+    serializer_class = SuperUserSerializer
 
+    @extend_schema(operation_id='superuser_create', request=SuperUserSerializer, responses=SuperUserSerializer)
     def post(self, request):
         if User.objects.filter(is_superuser=True).exists():
             return Response(
@@ -30,10 +33,11 @@ class SuperUserCreateView(APIView):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-
 class RegisterView(APIView):
     permission_classes = [AllowAny]
+    serializer_class = RegisterSerializer
+
+    @extend_schema(operation_id='users_register', request=RegisterSerializer, responses=UserSerializer)
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -50,11 +54,14 @@ class RegisterView(APIView):
 
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
 
+    @extend_schema(operation_id='users_profile_retrieve', responses=UserSerializer)
     def get(self, request):
         serializer = UserSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @extend_schema(operation_id='users_profile_partial_update', request=UserSerializer, responses=UserSerializer)
     def patch(self, request):
         serializer = UserSerializer(
             request.user,
