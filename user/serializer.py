@@ -5,6 +5,8 @@ from courses.serializers import DepartmentSerializer
 User = get_user_model()
 
 
+
+
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
     confirm_password = serializers.CharField(write_only=True)
@@ -41,6 +43,11 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
         return user
 
+
+class SuperUserSerializer(RegisterSerializer):
+    is_superuser = serializers.BooleanField(default=True)
+    is_staff = serializers.BooleanField(default=True)
+    
 class UserSerializer(serializers.ModelSerializer):
     department = DepartmentSerializer(read_only=True)
 
