@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'rest_framework',
 'corsheaders',
 'drf_spectacular',
+    'django_celery_results',
     'user',
     'lessons',
     'enrollments',
@@ -180,6 +181,28 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
 }
+
+CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+# Task settings
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
+CELERY_TASK_SOFT_TIME_LIMIT = 20 * 60  # 20 minutes
+
+# Store task results in database
+CELERY_RESULT_BACKEND = 'django-db'
+
+# Task annotations (optional)
+CELERY_TASK_ANNOTATIONS = {
+    'courses.tasks.send_course_assignment_email': {
+        'rate_limit': '10/m'  # Max 10 emails per minute
+    }
+}
+
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
