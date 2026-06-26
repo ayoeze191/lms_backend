@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lms-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: lms-backend
+  template:
+    metadata:
+      labels:
+        app: lms-backend
+    spec:
+      containers:
+      - name: lms-backend
+        image: lms-backend:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: lms-config
+        env:
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: lms-secret
+              key: secret-key
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: lms-secret
+              key: db-password
+        - name: EMAIL_HOST_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: lms-secret
+              key: email-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lms-backend-service
+spec:
+  selector:
+    app: lms-backend
+  ports:
+  - port: 8000
+    targetPort: 8000
+  type: NodePort
