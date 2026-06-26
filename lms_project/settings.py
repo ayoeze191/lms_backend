@@ -194,7 +194,7 @@ CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
 CELERY_TASK_SOFT_TIME_LIMIT = 20 * 60  # 20 minutes
 
 # Store task results in database
-CELERY_RESULT_BACKEND = os.gentenv('CELERY_RESULT_BACKEND', 'django-db')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'django-db')
 
 # Task annotations (optional)
 CELERY_TASK_ANNOTATIONS = {
