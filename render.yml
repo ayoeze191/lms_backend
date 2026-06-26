@@ -3,7 +3,7 @@ services:
     name: lms-api
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
+    startCommand: gunicorn lms_project.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: DJANGO_ENV
         value: production
@@ -39,7 +39,83 @@ services:
         sync: false
       - key: EMAIL_HOST_PASSWORD
         sync: false
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: lms-redis
+          property: connectionString
+
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: lms-redis
+          property: connectionString
 
 databases:
   - name: lms-db
     plan: free
+
+
+services:
+  - type: redis
+    name: lms-redis
+    plan: free
+    ipAllowList: []
+
+
+services:
+  - type: worker
+    name: lms-celery-worker
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: celery -A lms_project worker -l info
+    envVars:
+      - key: DJANGO_ENV
+        value: production
+
+      - key: SECRET_KEY
+        sync: false
+
+      - key: DB_NAME
+        fromDatabase:
+          name: lms-db
+          property: database
+
+      - key: DB_USER
+        fromDatabase:
+          name: lms-db
+          property: user
+
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: lms-db
+          property: password
+
+      - key: DB_HOST
+        fromDatabase:
+          name: lms-db
+          property: host
+
+      - key: DB_PORT
+        fromDatabase:
+          name: lms-db
+          property: port
+
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: lms-redis
+          property: connectionString
+
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: lms-redis
+          property: connectionString
+
+services:
+  - type: worker
+    name: lms-celery-beat
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: celery -A lms_project beat -l info
