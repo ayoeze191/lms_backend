@@ -3,7 +3,7 @@ services:
     name: lms-api
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
+    startCommand: gunicorn lms_project.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: DJANGO_ENV
         value: production
