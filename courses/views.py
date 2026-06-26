@@ -13,6 +13,7 @@ from .serializers import (
 
 
 class FacultyListCreateView(APIView):
+    serializer_class = FacultySerializer
     def get_permissions(self):
         if self.request.method == 'GET':
             return [AllowAny()]
@@ -37,6 +38,7 @@ class FacultyListCreateView(APIView):
 
 
 class DepartmentListCreateView(APIView):
+    serializer_class = DepartmentSerializer
     def get_permissions(self):
         if self.request.method == 'GET':
             return [AllowAny()]
@@ -61,6 +63,7 @@ class DepartmentListCreateView(APIView):
 
 
 class AcademicSessionListCreateView(APIView):
+    serializer_class = AcademicSessionSerializer
     def get_permissions(self):
         if self.request.method == 'GET':
             return [AllowAny()]
@@ -85,6 +88,7 @@ class AcademicSessionListCreateView(APIView):
 
 
 class SemesterListCreateView(APIView):
+    serializer_class = SemesterSerializer
     def get_permissions(self):
         if self.request.method == 'GET':
             return [AllowAny()]
@@ -109,6 +113,7 @@ class SemesterListCreateView(APIView):
 
 
 class CourseListCreateView(APIView):
+    serializer_class = CourseSerializer
     def get_permissions(self):
         if self.request.method == 'GET':
             return [AllowAny()]
@@ -133,6 +138,7 @@ class CourseListCreateView(APIView):
 
 
 class CourseDetailView(APIView):
+    serializer_class = CourseSerializer
     def get_permissions(self):
         if self.request.method == 'GET':
             return [AllowAny()]
